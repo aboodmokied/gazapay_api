@@ -9,9 +9,9 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.findOneByEmail(createUserDto.email);
+    const existingUser = await this.findOneByPhone(createUserDto.phone);
     if (existingUser) {
-      throw new ConflictException('Email already in use');
+      throw new ConflictException('Phone already in use');
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -24,10 +24,19 @@ export class UsersService {
     });
   }
 
-  async findOneByEmail(email: string): Promise<User | null> {
+
+  async findOneByPhone(phone: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { email },
+      where: { phone },
     });
+  }
+
+  async validateUser(phone: string, password: string): Promise<User | null> {
+    const user = await this.findOneByPhone(phone);
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return user;
+    }
+    return null;
   }
 
   async findOneById(id: string): Promise<User | null> {
