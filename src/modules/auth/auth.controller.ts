@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -10,7 +10,7 @@ import {
   ApiProperty,
 } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { BadRequestErrorDto, ConflictErrorDto, UnauthorizedErrorDto } from 'src/common/dto/api-response.dto';
+import { BadRequestErrorDto, ConflictErrorDto, UnauthorizedErrorDto } from '../../common/dto/api-response.dto';
 
 // ─── Inline response schemas ──────────────────────────────────────────────────
 
@@ -73,6 +73,7 @@ export class AuthController {
    */
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login with phone & password',
     description:
@@ -104,6 +105,7 @@ export class AuthController {
    * Creates a new user account. Phone must be unique.
    */
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new user',
     description:

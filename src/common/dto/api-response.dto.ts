@@ -44,20 +44,15 @@ export class ApiErrorResponseDto {
 
   @ApiProperty({
     description:
-      'Error message — a string for most errors, or an object/array for validation errors',
-    // oneOf: [
-    //   { type: 'string', example: 'Unauthorized' },
-    //   {
-    //     type: 'object',
-    //     example: {
-    //       statusCode: 400,
-    //       message: ['phone should not be empty'],
-    //       error: 'Bad Request',
-    //     },
-    //   },
-    // ],
+      'Error message — a string for most errors, or an array for validation errors',
   })
-  message: string | object;
+  message: string | string[];
+
+  @ApiProperty({
+    description: 'Error description or type',
+    example: 'Bad Request',
+  })
+  error: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -70,13 +65,12 @@ export class BadRequestErrorDto extends ApiErrorResponseDto {
 
   @ApiProperty({
     description: 'Validation error details',
-    example: {
-      statusCode: 400,
-      message: ['field should not be empty', 'password min length is 6'],
-      error: 'Bad Request',
-    },
+    example:  ['field should not be empty', 'password min length is 6'],
   })
-  declare message: object;
+  declare message: string[];
+
+  @ApiProperty({ example: 'Bad Request' })
+  declare error: string;
 }
 
 export class UnauthorizedErrorDto extends ApiErrorResponseDto {
@@ -85,6 +79,9 @@ export class UnauthorizedErrorDto extends ApiErrorResponseDto {
 
   @ApiProperty({ example: 'Invalid credentials' })
   declare message: string;
+
+  @ApiProperty({ example: 'Unauthorized' })
+  declare error: string;
 }
 
 export class ForbiddenErrorDto extends ApiErrorResponseDto {
@@ -93,6 +90,9 @@ export class ForbiddenErrorDto extends ApiErrorResponseDto {
 
   @ApiProperty({ example: 'Forbidden resource' })
   declare message: string;
+
+  @ApiProperty({ example: 'Forbidden' })
+  declare error: string;
 }
 
 export class NotFoundErrorDto extends ApiErrorResponseDto {
@@ -101,6 +101,9 @@ export class NotFoundErrorDto extends ApiErrorResponseDto {
 
   @ApiProperty({ example: 'Resource not found' })
   declare message: string;
+
+  @ApiProperty({ example: 'Not Found' })
+  declare error: string;
 }
 
 export class ConflictErrorDto extends ApiErrorResponseDto {
@@ -109,6 +112,9 @@ export class ConflictErrorDto extends ApiErrorResponseDto {
 
   @ApiProperty({ example: 'Resource already exists' })
   declare message: string;
+
+  @ApiProperty({ example: 'Conflict' })
+  declare error: string;
 }
 
 export class InternalServerErrorDto extends ApiErrorResponseDto {
@@ -117,4 +123,7 @@ export class InternalServerErrorDto extends ApiErrorResponseDto {
 
   @ApiProperty({ example: 'Internal server error' })
   declare message: string;
+
+  @ApiProperty({ example: 'Internal Server Error' })
+  declare error: string;
 }
