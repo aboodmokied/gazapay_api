@@ -18,7 +18,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate:dev": "npx prisma migrate dev",
+    "prisma:migrate:deploy": "npx prisma migrate deploy",
+    "prisma:studio": "npx prisma studio",
+    "deploy:dev": "npm install && npm run prisma:migrate:deploy && npm run build"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.1.0",
