@@ -37,7 +37,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger.error(
       `Http Status: ${status} Error Message: ${JSON.stringify(message)}`,
     );
-
+    this.logger.error(
+      "Error:",
+      exception.getResponse()
+    );
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
