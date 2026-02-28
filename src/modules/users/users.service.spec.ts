@@ -33,7 +33,7 @@ describe('UsersService', () => {
   describe('create', () => {
     it('should create a user with hashed password', async () => {
       const dto: CreateUserDto = {
-        email: 'test@example.com',
+        phone: '0599123456',
         password: 'password123',
         name: 'Test',
       };

@@ -8,6 +8,17 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { PrismaService } from './providers/prisma/prisma.service';
 
+import {
+  ApiSuccessResponseDto,
+  ApiErrorResponseDto,
+  BadRequestErrorDto,
+  UnauthorizedErrorDto,
+  ForbiddenErrorDto,
+  NotFoundErrorDto,
+  ConflictErrorDto,
+  InternalServerErrorDto,
+} from './common/dto/api-response.dto';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
@@ -30,11 +41,37 @@ async function bootstrap() {
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('Offline Wallet API')
-    .setDescription('The Offline Wallet API description')
+    .setDescription(
+      `## Response Envelopes
+
+**Success** — every successful response is wrapped by \`TransformInterceptor\`:
+\`\`\`json
+{ "statusCode": 200, "data": { ... } }
+\`\`\`
+
+**Error** — every error response is shaped by \`AllExceptionsFilter\`:
+\`\`\`json
+{ "statusCode": 400, "timestamp": "...", "path": "/...", "message": "..." }
+\`\`\`
+
+> See the **Schemas** section below for \`ApiSuccessResponseDto\`, \`ApiErrorResponseDto\`, and all specific error variants (400 / 401 / 403 / 404 / 409 / 500).`,
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [
+      ApiSuccessResponseDto,
+      ApiErrorResponseDto,
+      BadRequestErrorDto,
+      UnauthorizedErrorDto,
+      ForbiddenErrorDto,
+      NotFoundErrorDto,
+      ConflictErrorDto,
+      InternalServerErrorDto,
+    ],
+  });
   SwaggerModule.setup('api', app, document);
 
   // Prisma Shutdown Hooks

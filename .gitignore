@@ -5,5 +5,3 @@ node_modules
 /generated/prisma
 
 dist
-
-auth
