@@ -15,9 +15,8 @@ export class ApiSuccessResponseDto {
 
   @ApiProperty({
     description: 'Response payload — varies per endpoint',
-    example: {},
   })
-  data: unknown;
+  data: any;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
