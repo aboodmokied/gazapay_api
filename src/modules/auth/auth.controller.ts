@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
-  Res,
   Req,
   Request,
 } from '@nestjs/common';
@@ -28,7 +27,7 @@ import {
   ConflictErrorDto,
   UnauthorizedErrorDto,
 } from '../../common/dto/api-response.dto';
-import { Request as HttpRequest, Response } from 'express';
+import { Request as HttpRequest } from 'express';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -140,11 +139,9 @@ export class AuthController {
     type: BadRequestErrorDto,
   })
   async resetPassword(
-    @Res() res: Response,
     @Body() resetPasswordDto: ResetPasswordDto,
   ) {
-    const { message } = await this.authService.resetPassword(resetPasswordDto);
-    res.status(HttpStatus.OK).send({ message });
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   @Post('verify-code')
@@ -157,12 +154,11 @@ export class AuthController {
     description: 'Invalid or expired code.',
     type: UnauthorizedErrorDto,
   })
-  async verifyCode(@Res() res: Response, @Body() verifyCodeDto: VerifyCodeDto) {
-    const { message, token } = await this.authService.verifyResetCode(
+  async verifyCode(@Body() verifyCodeDto: VerifyCodeDto) {
+    return this.authService.verifyResetCode(
       verifyCodeDto.phone,
       verifyCodeDto.code,
     );
-    res.status(HttpStatus.OK).send({ message, token });
   }
 
   @Post('change-password')
@@ -177,7 +173,6 @@ export class AuthController {
     type: UnauthorizedErrorDto,
   })
   async changePassword(
-    @Res() res: Response,
     @Req() req: HttpRequest,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
@@ -186,10 +181,9 @@ export class AuthController {
     if (!token) {
       throw new UnauthorizedException('Missing reset token');
     }
-    const { message } = await this.authService.changePassword(
+    return this.authService.changePassword(
       token,
       changePasswordDto,
     );
-    res.status(HttpStatus.OK).send({ message });
   }
 }
