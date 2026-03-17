@@ -8,6 +8,10 @@ import configuration from './config/configuration';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
+import { CryptoModule } from './modules/crypto/crypto.module';
+import { DevicesModule } from './modules/devices/devices.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { SyncModule } from './modules/sync/sync.module';
 
 @Module({
   imports: [
@@ -33,6 +37,10 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
     // RedisModule,
     UsersModule,
     AuthModule,
+    CryptoModule,
+    DevicesModule,
+    TransactionsModule,
+    SyncModule,
   ],
 })
 export class AppModule {}
