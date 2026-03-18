@@ -4,32 +4,17 @@ import * as crypto from 'crypto';
 @Injectable()
 export class CryptoService {
   /**
-   * Reconstruct message hash
-   * hash = SHA256(content + iv + tag + timestamp + nonce)
-   */
-  hashPayload(
-    content: string,
-    iv: string,
-    tag: string,
-    timestamp: number,
-    nonce: string,
-  ): string {
-    const dataToHash = `${content}${iv}${tag}${timestamp}${nonce}`;
-    return crypto.createHash('sha256').update(dataToHash).digest('hex');
-  }
-
-  /**
    * Verify Ed25519 signature
    */
   verifySignature(
     publicKeyPem: string,
-    hash: string,
+    payloadToSign: string,
     signatureBase64: string,
   ): boolean {
     try {
       const isVerified = crypto.verify(
         null, // null for Ed25519, the algo is determined by the key
-        Buffer.from(hash, 'hex'),
+        Buffer.from(payloadToSign, 'utf8'),
         publicKeyPem,
         Buffer.from(signatureBase64, 'base64'),
       );

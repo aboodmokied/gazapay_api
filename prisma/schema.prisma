@@ -8,14 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  password  String
-  name      String?
-  phone     String   @unique
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  privateKey PrivateKey?
-  devices    Device[]
+  id           String        @id @default(uuid())
+  password     String
+  name         String?
+  phone        String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  privateKey   PrivateKey?
+  devices      Device[]
   transactions Transaction[]
 }
 
@@ -32,7 +32,7 @@ model PasswordReset {
 
 model PrivateKey {
   id        String   @id @default(uuid())
-  key       String   // Symmetric encryption key (e.g. Hex/Base64 of AES-256-GCM key)
+  key       String // Symmetric encryption key (e.g. Hex/Base64 of AES-256-GCM key)
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -42,11 +42,11 @@ model PrivateKey {
 }
 
 model Device {
-  id           String   @id
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  publicKey    String
-  createdAt    DateTime @default(now())
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicKey String
+  createdAt DateTime @default(now())
 
   transactions Transaction[]
   usedNonces   UsedNonce[]
@@ -55,27 +55,28 @@ model Device {
 }
 
 model Transaction {
-  id           String   @id
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deviceId     String
-  device       Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  content      String
-  iv           String
-  tag          String
-  timestamp    DateTime
-  createdAt    DateTime @default(now())
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  content   String
+  iv        String
+  tag       String
+  timestamp DateTime
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([deviceId])
 }
 
 model UsedNonce {
-  id           String   @id @default(uuid())
-  nonce        String   @unique
-  deviceId     String
-  device       Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
+  id        String   @id @default(uuid())
+  nonce     String
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
+  @@unique([nonce, deviceId])
   @@index([deviceId])
 }

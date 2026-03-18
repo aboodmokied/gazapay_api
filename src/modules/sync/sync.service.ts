@@ -14,9 +14,6 @@ import { TransactionsService } from '../transactions/transactions.service';
 export class SyncService {
   private readonly logger = new Logger(SyncService.name);
 
-  // Allow a 5-minute window for timestamps
-  private readonly ALLOWED_TIMESTAMP_WINDOW_MS = 5 * 60 * 1000;
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly cryptoService: CryptoService,
@@ -80,36 +77,34 @@ export class SyncService {
     aesKey: string,
     tx: SyncTransactionDto,
   ) {
-    const { timestamp, nonce, payload, signature } = tx;
+    const { transactionId, timestamp, nonce, payload, signature } = tx;
     const { content, iv, tag } = payload;
 
-    // 2. Reconstruct message hash
-    const hash = this.cryptoService.hashPayload(content, iv, tag, timestamp, nonce);
+    // 2. Reconstruct signature payload
+    const payloadToSign = JSON.stringify({
+      transactionId,
+      content,
+      iv,
+      tag,
+      timestamp,
+      nonce
+    });
 
     // 3. Verify Ed25519 signature
     // This MUST happen before decryption to prevent padding oracle attacks and wasted CPU
     try {
-      this.cryptoService.verifySignature(publicKey, hash, signature);
+      this.cryptoService.verifySignature(publicKey, payloadToSign, signature);
     } catch (e) {
       throw new UnauthorizedException('INVALID_SIGNATURE');
     }
 
     // 4. Check nonce uniqueness
     const usedNonce = await this.prisma.usedNonce.findUnique({
-      where: { nonce },
+      where: { nonce_deviceId: { nonce, deviceId } },
     });
 
     if (usedNonce) {
       throw new UnauthorizedException('NONCE_REUSED');
-    }
-
-    // 5. Validate timestamp
-    const now = Date.now();
-    if (Math.abs(now - timestamp) > this.ALLOWED_TIMESTAMP_WINDOW_MS) {
-      // In a truly offline scenario, devices might sync hours later.
-      // EITHER use a wide window, reliance on nonce, or a monotonic counter.
-      // For this requirement: reject if outside allowed window
-      throw new UnauthorizedException('INVALID_TIMESTAMP');
     }
 
     // 6. Decrypt payload using AES-256-GCM
@@ -137,11 +132,11 @@ export class SyncService {
     // Process everything in a db transaction to ensure atomicity
     await this.prisma.$transaction(async (prismaTx) => {
       // 9. Store transaction in database
-      await prismaTx.transaction.create({
-        // For simplicity, using same Prisma models via TransactionsService logic,
-        // but since we need atomicity inside this $transaction, we use prismaTx directly
-        data: {
-          id: parsedData.transactionId,
+      await prismaTx.transaction.upsert({
+        where: { id: transactionId },
+        update: {},
+        create: {
+          id: transactionId,
           userId: userId,
           deviceId: deviceId,
           content: decryptedString,
@@ -152,8 +147,10 @@ export class SyncService {
       });
 
       // 10. Store nonce in UsedNonces table
-      await prismaTx.usedNonce.create({
-        data: {
+      await prismaTx.usedNonce.upsert({
+        where: { nonce_deviceId: { nonce, deviceId } },
+        update: {},
+        create: {
           nonce,
           deviceId: deviceId,
         },
@@ -163,3 +160,6 @@ export class SyncService {
     return parsedData;
   }
 }
+
+
+// TODO: validate signature before decryption
