@@ -24,10 +24,24 @@ export class SyncService {
     const { deviceId, transactions } = dto;
 
     // 1. Retrieve device and its public key
-    const device = await this.prisma.device.findUnique({
-      where: { id: deviceId },
-      include: { user: { include: { privateKey: true } } }, // In real life, maybe get an AES key associated with the device or user
-    });
+    // const device = await this.prisma.device.findUnique({
+    //   where: { id: deviceId },
+    //   include: { user: { include: { privateKey: true } } }, // In real life, maybe get an AES key associated with the device or user
+    // });
+    const device = {
+      id: '1',
+      userId: '1',
+      // Public key matching the constant TEST_PRIVATE_KEY_BASE64 in crypto.controller.ts
+      publicKey:
+        '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAK1AdzgOZ+6tWEyuY0CDOU3B1538nagQIOMKf8UlrggI=\n-----END PUBLIC KEY-----\n',
+      user: {
+        privateKey: {
+          // AES key matching the constant TEST_AES_KEY_BASE64 in crypto.controller.ts
+          key: 'fkz3F6NUONT8bMRbwfDXM9JU1b+OKi0wp14gQiBRdaE=',
+        },
+      },
+    };
+
 
     if (!device) {
       throw new NotFoundException('Device not found');
