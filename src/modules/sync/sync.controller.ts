@@ -2,11 +2,14 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SyncService } from './sync.service';
 import { SyncRequestDto } from './dto/sync.dto';
+import { ApiSuccessResponse } from '../../common/decorators/api-success-response.decorator';
+import { SyncResponseDto } from './dto/sync-response.dto';
 
 @ApiTags('Sync')
 @Controller('sync')
@@ -18,39 +21,25 @@ export class SyncController {
   @ApiOperation({
     summary: 'Process batch of offline encrypted transactions',
     description: `
-This endpoint receives encrypted transactions from client devices.
+Receives and processes encrypted transactions from client devices.
 
-Flow:
-1. Client encrypts transaction data using AES-256-GCM
-2. Client signs canonical JSON string payload using Ed25519
-3. Server verifies signature BEFORE decryption
-4. Server decrypts and processes transaction
+### Security Flow:
+1. **Device Identification**: Uses \`deviceId\` to look up the device's public keys.
+2. **Signature Verification**: Verifies Ed25519 signature of the payload **BEFORE** decryption.
+3. **Replay Protection**: Checks \`nonce\` against used nonces in the database.
+4. **Decryption**: Decrypts the payload using the device's AES-256-GCM symmetric key.
+5. **Processing**: Validates and stores individual transactions.
 
-Security:
-- Encrypt-then-Sign pattern
-- Nonce prevents replay attacks
-- AES-GCM ensures integrity + confidentiality
+Returns a status for each transaction in the batch (success or failure with reason).
 `,
   })
   @ApiBody({
     type: SyncRequestDto,
     description: 'Batch of encrypted & signed transactions',
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Sync processed successfully',
-    schema: {
-      example: {
-        message: 'Sync processed',
-        results: [
-          { status: 'success', nonce: 'abc123' },
-          { status: 'failed', nonce: 'xyz789', error: 'INVALID_SIGNATURE' },
-        ],
-      },
-    },
-  })
-  @ApiResponse({ status: 400, description: 'Validation or payload error' })
-  @ApiResponse({ status: 401, description: 'Unauthorized or verification failed' })
+  @ApiSuccessResponse(SyncResponseDto)
+  @ApiBadRequestResponse({ description: 'Invalid payload structure or validation error' })
+  @ApiUnauthorizedResponse({ description: 'Signature verification failed or device not found' })
   async syncTransactions(@Body() dto: SyncRequestDto) {
     const results = await this.syncService.processSync(dto);
     return { message: 'Sync processed', results };

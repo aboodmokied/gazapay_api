@@ -14,7 +14,6 @@ model User {
   phone        String        @unique
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  privateKey   PrivateKey?
   devices      Device[]
   transactions Transaction[]
 }
@@ -30,22 +29,12 @@ model PasswordReset {
   @@index([phone])
 }
 
-model PrivateKey {
-  id        String   @id @default(uuid())
-  key       String // Symmetric encryption key (e.g. Hex/Base64 of AES-256-GCM key)
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-}
-
 model Device {
   id        String   @id
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   publicKey String
+  aesKey    String // Symmetric encryption key (Base64 of AES-256-GCM key)
   createdAt DateTime @default(now())
 
   transactions Transaction[]
